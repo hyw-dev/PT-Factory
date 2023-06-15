@@ -49,14 +49,14 @@ class PTools:
             "apikey": pt_gen_api
         }
 
-        logger.info("ptgen params: {}".format(dict_pt_gen_params))
+        logger.info(f"ptgen params: {dict_pt_gen_params}")
         try:
             pt_gen_response = requests.get(url=pt_gen_url, params=dict_pt_gen_params, proxies=pt_gen_proxy).json()
             if pt_gen_response["success"]:
                 logger.info("获取ptgen信息成功")
                 return pt_gen_response["format"]
             else:
-                logger.error("未查询到信息，ptgen返回结果：" + str(pt_gen_response))
+                logger.error(f"未查询到信息，ptgen返回结果：{str(pt_gen_response)}")
                 sys.exit(1)
         except Exception as e:
             logger.warning("获取ptgen信息失败，正在重试...请检查api，url和网络连接")
@@ -75,7 +75,7 @@ class PTools:
             search_bgm_proxy = None
 
         logger.info("正在搜索bangumi...")
-        url = "https://bgm.tv/subject_search/" + title
+        url = f"https://bgm.tv/subject_search/{title}"
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
                           "Chrome/80.0.3987.149 Safari/537.36"
@@ -100,7 +100,7 @@ class PTools:
             res = input("手动填入bgm/douban/idmb地址：")
             logger.info(res)
             return res
-        res = "https://bgm.tv" + res
+        res = f"https://bgm.tv{res}"
         logger.info(res)
         return res
 
@@ -114,7 +114,7 @@ class PTools:
             if i in string.punctuation:
                 path = path.replace(i, " ")
 
-        logger.info("搜索Anidb中...动画名为" + path)
+        logger.info(f"搜索Anidb中...动画名为{path}")
         if proxy["switch"]:
             get_bangmumi_url_proxy = {
                 "http": "socks5://" + proxy["ip_port"],
@@ -147,8 +147,8 @@ class PTools:
             logger.info("未查询到ANIDB结果")
             return "未查询到ANIDB结果"
 
-        title_url = "https://anidb.net" + title_url
-        logger.info("title_url: " + title_url)
+        title_url = f"https://anidb.net{title_url}"
+        logger.info(f"title_url: {title_url}")
         try:
             req_title_name = requests.get(url=title_url, headers=headers, proxies=get_bangmumi_url_proxy).text
         except Exception as e:
@@ -175,7 +175,7 @@ class PTools:
             if item in string.punctuation:
                 title_name = title_name.replace(item, " ")
 
-        logger.info("获取title成功： " + title_name)
+        logger.info(f"获取title成功： {title_name}")
         return title_name
 
     @staticmethod
@@ -213,7 +213,7 @@ class PTools:
             output_path, str(pathlib.PureWindowsPath(mktorrent_path)).split("\\")[-1] + ".torrent"
         ))
 
-        logger.info("输出路径：" + output_path)
+        logger.info(f"输出路径：{output_path}")
 
         new_torrent = Torrent.create_from(mktorrent_path)
         logger.info("生成torrent文件成功")

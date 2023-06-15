@@ -18,7 +18,7 @@ hash_values = [image["hash"] for image in images]
 
 # 遍历 hash 值，发送删除请求
 for hash_value in hash_values:
-    delete_url = "https://sm.ms/api/v2/delete/" + hash_value
+    delete_url = f"https://sm.ms/api/v2/delete/{hash_value}"
     response = requests.get(delete_url, headers=headers)
     try:
         print(response.json()["message"])

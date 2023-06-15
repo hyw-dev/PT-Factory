@@ -40,7 +40,7 @@ class PtGenPlus:
 
     @logger.catch
     def get_config(self, config_path: str = "") -> dict:
-        if config_path == "":
+        if not config_path:
             base_path = self.project_path
             file_path = os.path.abspath(os.path.join(base_path, "config.yaml"))  # 获取config文件路径
         else:
@@ -50,7 +50,7 @@ class PtGenPlus:
             with open(file_path, 'r', encoding="utf-8") as f:
                 config = yaml.load(f, Loader=yaml.FullLoader)
         except Exception as e:
-            logger.error("Load config error: {}".format(e))
+            logger.error(f"Load config error: {e}")
             sys.exit(1)
 
         return {
@@ -76,7 +76,7 @@ class PtGenPlus:
             self.upload_logo = config["upload-logo"]
             self.mediainfo_settings = config["mediainfo-settings"]
         except Exception as e:
-            logger.error("Load config dict error: {}".format(e))
+            logger.error(f"Load config dict error: {e}")
             sys.exit(1)
 
     @logger.catch
@@ -86,7 +86,7 @@ class PtGenPlus:
         try:
             config = self.get_config()
         except Exception as e:
-            logger.error("Load config dict error: {}".format(e))
+            logger.error(f"Load config dict error: {e}")
             sys.exit(1)
 
         self.proxy_settings = config["proxy-settings"]
@@ -104,7 +104,7 @@ class PtGenPlus:
         else:
             file_name = str(pathlib.PureWindowsPath(self.source_path)).split("\\")[-1]
         file_name += "__final_info.txt"
-        
+
         os.makedirs(
             os.path.join(self.project_path, "generate_stuff"),
             exist_ok=True
@@ -114,9 +114,9 @@ class PtGenPlus:
 
         file_name = os.path.abspath(os.path.join(self.output_stuff, file_name))
 
-        logger.info("Generate final info name: {}".format(file_name))
+        logger.info(f"Generate final info name: {file_name}")
 
-        self.proxy_settings["switch"] = True if PTools.check_proxy(self.proxy_settings) else False
+        self.proxy_settings["switch"] = bool(PTools.check_proxy(self.proxy_settings))
 
         with open(file_name, "w", encoding="utf-8") as final_info:
             final_info.write(self.upload_settings["mini-essay"] + "\n")
@@ -142,20 +142,20 @@ class PtGenPlus:
                 final_info.write(logo["logo2"] + "\n")
             final_info.write('[b] right click on the image and open it in a new tab to see the full-size one [/b]\n')
 
-        if self.encode_path != "" and self.source_path != "":
-            with open(file_name, "a", encoding="utf-8") as final_info:
-                for i2 in self.get_screens():
-                    final_info.write(i2)
-        else:
+        if self.encode_path == "" or self.source_path == "":
             with open(file_name, "a", encoding="utf-8") as final_info:
                 single_path = self.source_path if self.encode_path == "" else self.encode_path
-                if not self.upload_settings["ffmpeg"]:
-                    for i2 in self.get_screens_single(single_path):
-                        final_info.write(i2)
-                else:
+                if self.upload_settings["ffmpeg"]:
                     for i2 in self.get_screens_single_ffmpeg(single_path):
                         final_info.write(i2)
 
+                else:
+                    for i2 in self.get_screens_single(single_path):
+                        final_info.write(i2)
+        else:
+            with open(file_name, "a", encoding="utf-8") as final_info:
+                for i2 in self.get_screens():
+                    final_info.write(i2)
         try:
             with open(file_name, "r", encoding="utf-8") as final_info:
                 pyperclip.copy(final_info.read())
@@ -169,14 +169,14 @@ class PtGenPlus:
             torrent_path = self.encode_path if self.encode_path != "" else self.source_path
             torrent_path_0 = os.path.dirname(torrent_path)
             torrent_path_1 = os.path.dirname(torrent_path_0)
-            print("当前制种目录0（默认回车）为：" + torrent_path_0)
-            print("当前制种目录1为：" + torrent_path_1)
+            print(f"当前制种目录0（默认回车）为：{torrent_path_0}")
+            print(f"当前制种目录1为：{torrent_path_1}")
             flag = input("是否制作种子？对0/1目录制种~(0/1/N)：")
-            if flag == "0" or flag == "":
-                logger.info("制作种子目录0：{}".format(torrent_path_0))
+            if flag in ["0", ""]:
+                logger.info(f"制作种子目录0：{torrent_path_0}")
                 PTools.get_torrent(self.output_stuff, torrent_path_0, torrent_config)
             elif flag == "1":
-                logger.info("制作种子目录1：{}".format(torrent_path_1))
+                logger.info(f"制作种子目录1：{torrent_path_1}")
                 PTools.get_torrent(self.output_stuff, torrent_path_1, torrent_config)
             else:
                 logger.info("未制作种子")
@@ -207,9 +207,9 @@ class PtGenPlus:
         frames_num_1 = int(cap_1.get(7))
         frames_num_2 = int(cap_2.get(7))
         if frames_num_1 != frames_num_2:
-            logger.warning("视频可能有问题，帧数相差" + str(frames_num_1 - frames_num_2))
-            logger.warning('Source视频总帧数：' + str(frames_num_1))
-            logger.warning('Encode视频总帧数：' + str(frames_num_2))
+            logger.warning(f"视频可能有问题，帧数相差{str(frames_num_1 - frames_num_2)}")
+            logger.warning(f'Source视频总帧数：{frames_num_1}')
+            logger.warning(f'Encode视频总帧数：{frames_num_2}')
         # 这是按间隔取帧的参数，例如这里是5的话会把视频按时间轴从头到尾分为6段，去掉头段，取中间五段中的每段第一帧的前后的某个随机帧
         n = self.upload_settings["upload-pic-num"]
         frames_num_min = min(frames_num_1, frames_num_2)
@@ -228,10 +228,10 @@ class PtGenPlus:
         # 对比S-Encode logo
 
         for i in range(n):
-            logger.info("截图上传中...( ˶º̬˶ )୨⚑...第" + str(i + 1) + "组，共有" + str(n) + "组")
-            random_frame = random.randint(int(split_num / (-2)), int(split_num / 2))
+            logger.info(f"截图上传中...( ˶º̬˶ )୨⚑...第{str(i + 1)}组，共有{str(n)}组")
+            random_frame = random.randint(split_num // -2, split_num // 2)
             split_num_deal += random_frame
-            logger.info("当前目标帧为" + str(split_num_deal))
+            logger.info(f"当前目标帧为{split_num_deal}")
             cap_1.set(cv2.CAP_PROP_POS_FRAMES, split_num_deal)
             cap_2.set(cv2.CAP_PROP_POS_FRAMES, split_num_deal)
             try:
@@ -255,7 +255,7 @@ class PtGenPlus:
 
             res_s = self.upload_to_pic_hosting(self.proxy_settings, self.pic_hosting_settings, path_s)
 
-            pic_list.append(res_s + " ")
+            pic_list.append(f"{res_s} ")
 
             cv2.imencode('.jpg', e_1)[1].tofile(path_e)
 
@@ -286,10 +286,10 @@ class PtGenPlus:
         pic_list = []
 
         for i in range(n):
-            logger.info("截图上传中...( ˶º̬˶ )୨⚑...第" + str(i + 1) + "组，共有" + str(n) + "组")
-            random_frame = random.randint(int(split_num / (-2)), int(split_num / 2))
+            logger.info(f"截图上传中...( ˶º̬˶ )୨⚑...第{str(i + 1)}组，共有{str(n)}组")
+            random_frame = random.randint(split_num // -2, split_num // 2)
             split_num_deal += random_frame
-            logger.info("当前目标帧为" + str(split_num_deal))
+            logger.info(f"当前目标帧为{split_num_deal}")
             cap_single.set(cv2.CAP_PROP_POS_FRAMES, split_num_deal)
             try:
                 _, e_s_1 = cap_single.read()
@@ -335,18 +335,18 @@ class PtGenPlus:
         pic_list = []
         pic_time_list = []
 
-        for time in range(n):
-            random_time = random.randint(int(split_time / (-2)), int(split_time / 2))
+        for _ in range(n):
+            random_time = random.randint(split_time // -2, split_time // 2)
             split_time_deal += random_time
             pic_time_list.append(strftime("%H:%M:%S", gmtime(split_time_deal)))
             split_time_deal -= random_time
             split_time_deal += split_time
-        logger.info("待获取的时间：" + str(pic_time_list))
+        logger.info(f"待获取的时间：{pic_time_list}")
 
         ffmpeg_config = "ffmpeg -ss \"{}\" -i \"{}\" -vframes 1 \"{}\" "
 
         for t in pic_time_list:
-            logger.info("截取中，当前为：" + str(t))
+            logger.info(f"截取中，当前为：{str(t)}")
             path_s_or_e = os.path.abspath(os.path.join(
                 output_dir, str(pathlib.PureWindowsPath(single_path)).split("\\")[-1] + "__" +
                             t.replace(":", "_") + "__V__" + '.jpg'
