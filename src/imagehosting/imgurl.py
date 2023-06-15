@@ -39,5 +39,5 @@ def upload_to_imgurl(proxy, pic_hosting_settings, image_path) -> str:
             logger.error("上传失败，错误信息为：" + imgurl_json["msg"])
             sys.exit(1)
     except Exception as e:
-        logger.warning("上传失败，重试中" + str(e))
+        logger.warning(f"上传失败，重试中{str(e)}")
         raise e
